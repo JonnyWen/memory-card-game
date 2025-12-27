@@ -16,6 +16,9 @@ const cardValues = [
 function App() {
   // Set a state for the cards, at first empty
   const [cards, setCards] = useState([]);
+  // Keep track of id of flipped cards
+  const [isFlippedCards, setFlippedCards] = useState([]);
+  // Keep track of which cards are matched
 
   const initializeGame = () => {
     // SUFFLE THE CARDS
@@ -52,7 +55,36 @@ function App() {
     });
     setCards(newCards);
 
-    const
+    const newFlippedCards = [...isFlippedCards, card.id];
+    setFlippedCards(newFlippedCards); 
+    // remember state only updates when react re-renders
+
+    // check for match if two cards are flipped
+
+    if (isFlippedCards.length === 1) {
+      const firstCard = cards[isFlippedCards[0]];
+
+      if (firstCard.value === card.value) {
+        alert("Match");
+      } else {
+        // flip back card 1 and 2
+        // setTimeout for unflip animation
+        setTimeout(() => {
+          const flippedBackCards = newCards.map((c) => {
+            if (newFlippedCards.includes(c.id) || c.id === card.id) {
+              return {...c, isFlipped: false};
+            } else {
+              return c;
+            }
+          });
+  
+          setCards(flippedBackCards);
+          // no more ids with isFlipped true
+          setFlippedCards([]);
+        }, 1000); // 1 second
+        
+      }
+    }
   };
 
   return (
@@ -61,7 +93,7 @@ function App() {
 
       <div className="cards-grid">
         {cards.map((card) => (
-          <Card card={card} onClick={handleCardClick} /> 
+          <Card card={card} onClickF={handleCardClick} /> 
         ))}
       </div>
     </div>
