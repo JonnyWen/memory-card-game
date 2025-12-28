@@ -18,7 +18,10 @@ function App() {
   const [cards, setCards] = useState([]);
   // Keep track of id of flipped cards
   const [isFlippedCards, setFlippedCards] = useState([]);
-  // Keep track of which cards are matched
+  // Keep track of score
+  const [score, setScore] = useState(0);
+  // Keep track of moves
+  const [moves, setMoves] = useState(0);
 
   const initializeGame = () => {
     // SUFFLE THE CARDS
@@ -34,10 +37,10 @@ function App() {
     setCards(cardsSeq);
   };
 
-  // Hook that allows us to run once post render
+  // Hook that allows us to init game once
   useEffect(() => {
-    initializeGame();
-  }, []);
+    initializeGame(); // <- effect
+  }, []); // <- effect depends on nothing, so run once
 
   const handleCardClick = (card) => {
     // Don't allow clicking post flipped or matched
@@ -65,7 +68,28 @@ function App() {
       const firstCard = cards[isFlippedCards[0]];
 
       if (firstCard.value === card.value) {
-        alert("Match");
+        // alert("Match");
+        setTimeout(() => {
+    
+          // update state of cards, pre state change cards array
+          // React guarentees arguemtn in setState is previous
+          setCards((prev) => 
+            prev.map((c) => {
+              if (c.id === card.id || c.id === firstCard.id) { 
+                return {...c, isMatched: true}
+              } else {
+                return c;
+              }
+            })
+          );
+          // This is not safe as we are not certain state will change immediately
+          setFlippedCards([]);
+          // let newScore = score;
+          // ++newScore;
+          // setScore(newScore);
+          // Passing in param guarentees we change the prev state
+        }, 500);
+        setScore((prev) => prev + 1);
       } else {
         // flip back card 1 and 2
         // setTimeout for unflip animation
@@ -84,12 +108,14 @@ function App() {
         }, 1000); // 1 second
         
       }
+
+      setMoves((prev) => prev + 1);
     }
   };
 
   return (
     <div className="app">
-      <GameHeader score={3} moves={3} />
+      <GameHeader score={score} moves={moves} />
 
       <div className="cards-grid">
         {cards.map((card) => (
