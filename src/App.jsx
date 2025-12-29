@@ -23,6 +23,10 @@ function App() {
   // Keep track of moves
   const [moves, setMoves] = useState(0);
 
+  // extra layer of saftey
+  const [isLocked, setIsLocked] = useState(0);
+
+
   const initializeGame = () => {
     // SUFFLE THE CARDS
     const cardsSeq = cardValues.map((value, index) => ({ 
@@ -33,24 +37,28 @@ function App() {
         isMatched: false,
     }));
     
-    // changes state of cards as array of objects with fields above
+    // all at initial state
     setCards(cardsSeq);
+    setScore(0);
+    setMoves(0);
+    setFlippedCards([]);
   };
 
-  // Hook that allows us to init game once
+  // useEffect is a post render hook
   useEffect(() => {
-    initializeGame(); // <- effect
+      initializeGame(); // <- desired effect
   }, []); // <- effect depends on nothing, so run once
 
   const handleCardClick = (card) => {
+    
     // Don't allow clicking post flipped or matched
-    if (card.isFlipped || card.isMatched) {
+    if (card.isFlipped || card.isMatched || isFlippedCards.length === 2 || isLocked) {
       return;
     } 
 
-    // Update card flipped state, rem map is just a loop
+    // Update card that was flipped
     const newCards = cards.map((c) => {
-      if (c.id === card.id) { // curr card id = prop id
+      if (c.id === card.id) {
         return {...c, isFlipped: true}
       } else {
         return c;
@@ -59,20 +67,23 @@ function App() {
     setCards(newCards);
 
     const newFlippedCards = [...isFlippedCards, card.id];
+
+    // update isFlippedCards
     setFlippedCards(newFlippedCards); 
-    // remember state only updates when react re-renders
 
     // check for match if two cards are flipped
 
     if (isFlippedCards.length === 1) {
+      setIsLocked(true);
+
       const firstCard = cards[isFlippedCards[0]];
 
+      // Match case
       if (firstCard.value === card.value) {
         // alert("Match");
         setTimeout(() => {
     
-          // update state of cards, pre state change cards array
-          // React guarentees arguemtn in setState is previous
+          // update state of cards
           setCards((prev) => 
             prev.map((c) => {
               if (c.id === card.id || c.id === firstCard.id) { 
@@ -82,14 +93,15 @@ function App() {
               }
             })
           );
-          // This is not safe as we are not certain state will change immediately
+        
           setFlippedCards([]);
-          // let newScore = score;
-          // ++newScore;
-          // setScore(newScore);
-          // Passing in param guarentees we change the prev state
+  
         }, 500);
+        // Passing in param guarentees we change the prev state
         setScore((prev) => prev + 1);
+        // No longer locked, as we changed cards state
+        setIsLocked(false);
+      // mismatch case
       } else {
         // flip back card 1 and 2
         // setTimeout for unflip animation
@@ -103,19 +115,20 @@ function App() {
           });
   
           setCards(flippedBackCards);
-          // no more ids with isFlipped true
+          
           setFlippedCards([]);
-        }, 1000); // 1 second
+        }, 500); 
         
       }
 
       setMoves((prev) => prev + 1);
+      setIsLocked(false);
     }
   };
 
   return (
     <div className="app">
-      <GameHeader score={score} moves={moves} />
+      <GameHeader score={score} moves={moves} onReset={initializeGame} />
 
       <div className="cards-grid">
         {cards.map((card) => (
