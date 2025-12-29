@@ -138,14 +138,14 @@ function App() {
     }
   };
 
-  const isGameComplete = (score) => { return score === 8; };
+  const isGameComplete = score === 8;
 
   return (
     <div className="app">
       <GameHeader score={score} moves={moves} onReset={initializeGame} />
 
       
-      {isGameComplete(score) && <WinMessage moves={moves} />}
+      {isGameComplete && <WinMessage moves={moves} />}
 
       <div className="cards-grid">
         {cards.map((card) => (
