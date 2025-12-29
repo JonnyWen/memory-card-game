@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "./components/Card";
 import { GameHeader } from "./components/GameHeader";
+import { WinMessage } from "./components/WinHeader";
 
 let cardValues = [
   "🐈", "🐈",
@@ -137,9 +138,14 @@ function App() {
     }
   };
 
+  const isGameComplete = (score) => { return score === 8; };
+
   return (
     <div className="app">
       <GameHeader score={score} moves={moves} onReset={initializeGame} />
+
+      
+      {isGameComplete(score) && <WinMessage moves={moves} />}
 
       <div className="cards-grid">
         {cards.map((card) => (
