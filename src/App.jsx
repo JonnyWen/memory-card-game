@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card } from "./components/Card";
 import { GameHeader } from "./components/GameHeader";
 
-const cardValues = [
+let cardValues = [
   "🐈", "🐈",
   "🐈‍⬛", "🐈‍⬛",
   "🐒", "🐒",
@@ -23,13 +23,23 @@ function App() {
   // Keep track of moves
   const [moves, setMoves] = useState(0);
 
-  // extra layer of saftey
+  // does not stop invalid flip, but rep a game phase
   const [isLocked, setIsLocked] = useState(0);
 
+  const shuffle = (array) => {
+    const arr = [...array]; // copy to avoid mutation
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
 
   const initializeGame = () => {
     // SUFFLE THE CARDS
-    const cardsSeq = cardValues.map((value, index) => ({ 
+    const shuffled = shuffle(cardValues);
+
+    const cardsSeq = shuffled.map((value, index) => ({ 
         // mapping emoji -> obj w/ fields
         id: index,
         value,
@@ -42,6 +52,7 @@ function App() {
     setScore(0);
     setMoves(0);
     setFlippedCards([]);
+    setIsLocked(false);
   };
 
   // useEffect is a post render hook
@@ -74,7 +85,9 @@ function App() {
     // check for match if two cards are flipped
 
     if (isFlippedCards.length === 1) {
+      // If we are on second card
       setIsLocked(true);
+      
 
       const firstCard = cards[isFlippedCards[0]];
 
@@ -95,12 +108,11 @@ function App() {
           );
         
           setFlippedCards([]);
-  
+          setIsLocked(false);
         }, 500);
         // Passing in param guarentees we change the prev state
         setScore((prev) => prev + 1);
-        // No longer locked, as we changed cards state
-        setIsLocked(false);
+
       // mismatch case
       } else {
         // flip back card 1 and 2
@@ -117,12 +129,11 @@ function App() {
           setCards(flippedBackCards);
           
           setFlippedCards([]);
-        }, 500); 
-        
+          setIsLocked(false);
+        }, 1000); 
       }
 
       setMoves((prev) => prev + 1);
-      setIsLocked(false);
     }
   };
 
